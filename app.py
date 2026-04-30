@@ -149,6 +149,15 @@ with st.sidebar:
     if st.button("🎮 Take a Quiz", help="Test your knowledge of the Indian election process."):
          st.session_state.quick_prompt = "Give me a quick 3-question multiple-choice quiz about Indian election rules and EVMs. Wait for my answer before revealing the correct ones."
 
+    # FEATURE 6: Google Maps Integration (Google Service #2)
+    st.divider()
+    st.subheader("🗺️ Find Polling Booths")
+    city = st.text_input("Enter your city to find nearby booths:")
+    if city:
+        # Free Google Maps Embed without API key
+        maps_url = f"https://www.google.com/maps?q=polling+booths+in+{city.replace(' ', '+')}&output=embed"
+        st.components.v1.iframe(maps_url, height=300)
+
     st.divider()
     st.markdown("<div style='text-align: center; color: gray; font-size: 0.9em; margin-top: 20px;'>Developed by <b>Syed</b></div>", unsafe_allow_html=True)
 
@@ -217,8 +226,16 @@ if prompt:
         full_prompt = history_text + f"User: {prompt}\nAssistant:"
 
         try:
+            # Enable Google Search Grounding (Google Service #3)
+            # This allows Gemini to search Google live for the latest election news
+            tools = [{"google_search_retrieval": {}}] if not myth_buster_mode else None
+            
             # Use stream=True to get the typing effect like Gemini
-            response_stream = model.generate_content(full_prompt, stream=True)
+            response_stream = model.generate_content(
+                full_prompt, 
+                stream=True,
+                tools=tools # Adds live Google Search capabilities
+            )
             full_response = ""
             
             for chunk in response_stream:
